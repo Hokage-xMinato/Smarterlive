@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Study Smarter — Player</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <style>
+    :root {
+      --header-h: 64px;
+      --primary-accent: #3b82f6; /* Blue-500 */
+      --primary-accent-glow: rgba(59, 130, 246, 0.5);
+      --bg-dark-primary: #0f172a; /* Slate-900 */
+      --bg-dark-secondary: #1e293b; /* Slate-800 */
+      --border-color: #334155; /* Slate-700 */
+      --text-primary: #f8fafc; /* Slate-50 */
+      --text-secondary: #cbd5e1; /* Slate-300 */
+      --danger-color: #ef4444;
+      --warning-color: #f59e0b;
+      --success-color: #10b981;
+    }
+    html, body {
+      height: 100%; margin: 0; font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg-dark-primary); color: var(--text-primary);
+      overflow-x: hidden;
+      -webkit-user-select: none; /* Safari */
+      -ms-user-select: none; /* IE 10+ */
+      user-select: none; /* Standard */
+    }
+    body.loaded .animated-content {
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity 0.5s ease-out, transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .animated-content {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    .app-header {
+      height: var(--header-h); display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; position: fixed; inset: 0 auto auto 0;
+      background: rgba(15, 23, 42, 0.7); border-bottom: 1px solid var(--border-color);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 60; backdrop-filter: blur(12px);
+    }
+    .app-title { display: flex; align-items: center; gap: 12px; }
+    .app-title .logo-img { height: 40px; width: 40px; border-radius: 8px; object-fit: cover; }
+    .app-title .header-watermark { height: 28px; border-radius: 6px; margin-left: 4px; }
+    .app-title .title-text { font-weight: 800; font-size: 18px; }
+    .app-title .subtitle-text { font-size: 12px; opacity: .8; }
+    main {
+      padding: var(--header-h) 24px 0 24px; min-height: 100%;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: flex-start; box-sizing: border-box;
+    }
+    #playerContainer {
+        width: 100%; max-width: 1200px; margin-top: 32px; margin-bottom: 32px;
+        position: relative;
+    }
+    #player {
+      width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 16px;
+      overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7);
+      border: 1px solid var(--border-color);
+    }
+    #videoWatermark {
+        position: absolute; top: 20px; left: 20px; z-index: 51; opacity: 0.6;
+        pointer-events: none; transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    #videoWatermark img { height: 40px; border-radius: 4px; }
+    #player:hover #videoWatermark { opacity: 0.25; }
+    .controls-right { display: flex; align-items: center; gap: 10px; }
+    .control-btn {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);
+      color: var(--text-secondary); padding: 9px; border-radius: 10px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .control-btn:hover {
+        background: var(--bg-dark-secondary); color: var(--text-primary);
+        border-color: var(--primary-accent); box-shadow: 0 0 15px var(--primary-accent-glow);
+        transform: translateY(-2px);
+    }
+    #progressBarContainer {
+      position:fixed; top:var(--header-h); left:0; right:0; z-index:55; pointer-events:none; height: 4px;
+    }
+    #progressBar {
+      height: 100%; width: 0; background: var(--danger-color);
+      box-shadow: 0 0 10px var(--danger-color);
+      transition: width .25s linear, background-color .5s ease, box-shadow .5s ease;
+      border-radius: 0 4px 4px 0;
+    }
+    #linksSection { max-width: 1200px; width: 100%; padding: 24px 0; margin-bottom: 48px; }
+    .links-title { font-weight: 700; font-size: 18px; margin-bottom: 16px; color: var(--text-secondary); text-align: center; }
+    .links-grid { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    .link-card {
+        display: flex; align-items: center; gap: 12px; background: var(--bg-dark-secondary);
+        padding: 12px 20px; border-radius: 10px; border: 1px solid var(--border-color);
+        text-decoration: none; color: var(--text-primary); font-weight: 600;
+        transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .link-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+    .link-card[data-service="youtube"]:hover { border-color: #ff0000; color: #ff0000; }
+    .link-card[data-service="telegram"]:hover { border-color: #24A1DE; color: #24A1DE; }
+    .link-card[data-service="instagram"]:hover { border-color: #E4405F; color: #E4405F; }
+    .link-card[data-service="website"]:hover { border-color: var(--primary-accent); color: var(--primary-accent); }
+    #noteDrawer {
+      position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg-dark-secondary);
+      max-height: 48%; transform: translateY(110%);
+      transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 20px;
+      z-index: 70; box-shadow: 0 -10px 40px rgba(0,0,0,0.4); border-top: 1px solid var(--border-color);
+    }
+    #noteDrawer.open { transform: translateY(0); }
+    .note-card { background: var(--border-color); padding: 12px; border-radius: 8px; border: 1px solid #4b5563;}
+    textarea.note-card { color: var(--text-primary); width: 100%; resize: vertical; }
+    #saveNoteBtn { background: var(--primary-accent); color: #fff; padding: 12px 16px; border-radius: 8px }
+    #saveNoteBtn:hover { filter: brightness(1.1); }
+    .swal2-popup.swal-custom-light-theme {
+        background: #fff !important;
+        color: #1f2937 !important;
+        border-radius: 16px !important;
+    }
+    .swal-custom-light-theme .swal2-title { color: #111827 !important; font-weight: 700; }
+    .swal-custom-light-theme .swal2-html-container { color: #4b5563 !important; }
+    .swal-custom-light-theme .swal2-confirm { background-color: var(--primary-accent) !important; border-radius: 8px !important; }
+    .swal-custom-light-theme .swal2-cancel { border-radius: 8px !important; }
+    .swal-menu-button {
+        display: flex; align-items: center; gap: 16px;
+        padding: 16px; border-radius: 12px;
+        border: 1px solid #e5e7eb; cursor: pointer;
+        transition: all .2s ease; margin-bottom: 12px;
+    }
+    .swal-menu-button:hover {
+        border-color: var(--primary-accent);
+        background: #eff6ff;
+        color: var(--primary-accent);
+    }
+    .swal-menu-button i { color: var(--primary-accent); }
+    .swal-menu-button-text { font-size: 16px; font-weight: 600; }
+    .swal-custom-light-theme .swal2-radio {
+        display: grid !important; grid-template-columns: 1fr 1fr;
+        gap: 12px; margin: 24px 0 !important;
+    }
+    .swal-custom-light-theme .swal2-radio label {
+        margin: 0 !important; border: 1px solid #d1d5db; border-radius: 8px;
+        padding: 14px; transition: .2s; font-weight: 500;
+    }
+    .swal-custom-light-theme .swal2-radio label:hover { background: #f9fafb; }
+    .swal-custom-light-theme .swal2-radio input:checked + span {
+        color: var(--primary-accent) !important; font-weight: 700;
+    }
+    @media(max-width: 768px) {
+      .app-header { padding: 0 16px; }
+      .app-title .subtitle-text, .app-title .header-watermark { display: none; }
+      main { padding: var(--header-h) 0 0 0; }
+      #playerContainer { margin: 0; }
+      #player { border-radius: 0; border-left: none; border-right: none; }
+      .controls-right { gap: 8px; }
+      #linksSection { padding: 24px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header animated-content">
+    <div class="app-title">
+      <img src="https://placehold.co/44x44/3b82f6/ffffff?text=SS" alt="Logo" class="logo-img" />
+      <div>
+        <div class="title-text">Study Smarter</div>
+        <div class="subtitle-text">Player</div>
+      </div>
+      <img src="https://i.imgur.com/fTOETxW.jpeg" alt="Watermark" class="header-watermark"/>
+    </div>
+    <div class="controls-right">
+      <button class="control-btn" id="screenshotBtn" title="Take Screenshot"><i data-feather="scissors"></i></button>
+      <button class="control-btn" id="pipBtn" title="Miniplayer (PiP)"><i data-feather="airplay"></i></button>
+      <button class="control-btn" id="noteBtn" title="Notes"><i data-feather="edit-2"></i></button>
+      <button class="control-btn" id="settingsBtn" title="Settings"><i data-feather="settings"></i></button>
+    </div>
+  </header>
+  <div id="progressBarContainer"><div id="progressBar"></div></div>
+  <main>
+    <div id="playerContainer" class="animated-content" style="transition-delay: 0.1s;">
+      <div id="player">
+        <div id="videoWatermark"><img src="https://i.imgur.com/fTOETxW.jpeg" alt="Video Watermark"/></div>
+        <video id="video" crossorigin="anonymous" controls playsinline preload="metadata" poster="https://placehold.co/1200x675/111827/ffffff?text=Loading+Video..." style="width:100%;height:100%;display:block;background:#000"></video>
+      </div>
+    </div>
+    <section id="linksSection" class="animated-content" style="transition-delay: 0.2s;">
+      <h3 class="links-title">Connect With Us</h3>
+      <div class="links-grid">
+        <a href="https://t.me/aarambh_batch_10th" class="link-card" target="_blank" data-service="youtube"><i data-feather="youtube"></i><span>Aarambh Batch</span></a>
+        <a href="https://t.me/studysmarterhub" class="link-card" target="_blank" data-service="telegram"><i data-feather="send"></i><span>Telegram</span></a>
+        <a href="https://t.me/prarambh_batch_11" class="link-card" target="_blank" data-service="instagram"><i data-feather="instagram"></i><span>Prarambh Batch</span></a>
+        <a href="https://studysmarterx.netlify.app" class="link-card" target="_blank" data-service="website"><i data-feather="globe"></i><span>Website</span></a>
+      </div>
+    </section>
+  </main>
+  <div id="noteDrawer">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-weight:700; font-size: 18px;">📒 My Notes</div>
+      <button class="control-btn" id="closeNotes"><i data-feather="x"></i></button>
+    </div>
+    <div id="noteList" style="display:flex;flex-direction:column;gap:8px;overflow:auto;max-height:calc(100% - 120px);padding-bottom:12px"></div>
+    <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+      <textarea id="noteInput" placeholder="Write a note at the current timestamp..." class="note-card" style="flex:1;min-height:56px"></textarea>
+      <button class="control-btn" id="saveNoteBtn">Save</button>
+    </div>
+  </div>
+   <script>
+// Telegram link
+const telegramLink = 'https://t.me/studysmarterhub';
+
+// Inject Google Font
+const googleFont = document.createElement('link');
+googleFont.href = 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap';
+googleFont.rel = 'stylesheet';
+document.head.appendChild(googleFont);
+
+// Inject CSS
+const style = document.createElement('style');
+style.innerHTML = `
+* {
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+#telegramPopup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #fdfbfb, #ebedee), url('https://www.transparenttextures.com/patterns/cubes.png');
+  border-radius: 25px;
+  box-shadow: 0 16px 60px rgba(0, 0, 0, 0.25);
+  padding: 40px 35px;
+  z-index: 9999;
+  max-width: 90%;
+  width: 440px;
+  text-align: center;
+  animation: fadeIn 0.6s ease-out;
+}
+#telegramPopup h2 {
+  font-size: 28px;
+  color: #002244;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+#telegramPopup p {
+  font-size: 17px;
+  color: #333;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.telegram-btn {
+  background: linear-gradient(135deg, #0088cc, #005f99);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 14px 30px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.telegram-btn:hover {
+  transform: scale(1.06);
+  box-shadow: 0 8px 24px rgba(0, 136, 204, 0.4);
+}
+.later-btn {
+  background: #e0e0e0;
+  color: #333;
+  border: none;
+  border-radius: 50px;
+  padding: 13px 28px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.later-btn:hover {
+  background: #ccc;
+}
+#telegramReminder {
+  position: fixed;
+  top: 20px;
+  right: 25px;
+  background: linear-gradient(135deg, #f9f9f9, #eef7ff);
+  border-left: 5px solid #0088cc;
+  border-radius: 14px;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.1);
+  padding: 20px 25px;
+  z-index: 9998;
+  font-family: 'Poppins', sans-serif;
+  width: 300px;
+  display: none;
+  animation: slideDown 0.5s ease-out;
+}
+#telegramReminder strong {
+  font-size: 15px;
+  color: #003366;
+}
+#telegramReminder a {
+  display: inline-block;
+  margin-top: 10px;
+  color: #0088cc;
+  text-decoration: none;
+  font-weight: 600;
+}
+#telegramReminder a:hover {
+  text-decoration: underline;
+}
+#closeReminder {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #888;
+  font-weight: bold;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95) translate(-50%, -50%); }
+  to { opacity: 1; transform: scale(1) translate(-50%, -50%); }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+`;
+document.head.appendChild(style);
+
+// Show popup only once per session
+if (!sessionStorage.getItem('telegramPopupDismissed')) {
+  const popup = document.createElement('div');
+  popup.id = 'telegramPopup';
+  popup.innerHTML = `
+    <h2>📢 Stay Smart, Study Smarter!</h2>
+    <p>Join our Telegram for fresh updates, exclusive resources & daily motivation — only for learners like you!</p>
+    <div class="button-container">
+      <button class="telegram-btn" onclick="window.open('${telegramLink}', '_blank')">💬 Join Telegram</button>
+      <button class="later-btn" onclick="hideTelegramPopup()">Maybe Later</button>
+    </div>
+  `;
+  document.body.appendChild(popup);
+}
+
+// Create Reminder Notification
+const reminder = document.createElement('div');
+reminder.id = 'telegramReminder';
+reminder.innerHTML = `
+  <button id="closeReminder" onclick="this.parentElement.style.display='none'">×</button>
+  <strong>🚀 Don't forget to join our smart learners!</strong>
+  <br/>
+  <a href="${telegramLink}" target="_blank">👉 Join Telegram</a>
+`;
+document.body.appendChild(reminder);
+
+// Hide main popup and show reminder
+window.hideTelegramPopup = function() {
+  const popup = document.getElementById('telegramPopup');
+  if (popup) popup.style.display = 'none';
+  sessionStorage.setItem('telegramPopupDismissed', 'true');
+  setTimeout(() => {
+    document.getElementById('telegramReminder').style.display = 'block';
+  }, 600);
+};
+</script>
+   <script> document.addEventListener("DOMContentLoaded", function() {
+        function decodeBase64(encodedString) {
+            return atob(encodedString);
+        }
+
+        const encodedDomain = "c21hcnRlcmxpdmUubmV0bGlmeS5hcHA=";
+        const decodedDomain = decodeBase64(encodedDomain);
+        const currentDomain = window.location.hostname;
+
+        function checkDomain() {
+            if (currentDomain !== decodedDomain) {
+                if (window !== window.top) {
+                    const parentDomain = window.top.location.hostname;
+                    if (parentDomain !== decodedDomain) {
+                        window.location.replace("denied.html");
+                    }
+                } else {
+                    window.location.replace("denied.html");
+                }
+            }
+        }
+
+        checkDomain();
+    });
+  </script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --------------------
+    // CONTENT PROTECTION
+    // --------------------
+    const preventDefaultAction = e => e.preventDefault();
+    document.addEventListener('contextmenu', preventDefaultAction);
+    document.addEventListener('copy', preventDefaultAction);
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey && (e.key === 'U' || e.key === 'S' || e.key === 'C')) ||
+           (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+           e.key === 'F12') {
+        preventDefaultAction(e);
+      }
+    });
+
+    // --------------------
+    // ID Check & Initial Setup
+    // --------------------
+    function getTodayISTMidnightTS() {
+      const now = new Date();
+      now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+      const istDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+      istDate.setHours(0, 0, 0, 0);
+      return Math.floor(istDate.getTime() / 1000);
+    }
+    function param(name) { return new URLSearchParams(window.location.search).get(name); }
+    if (!param('id') || parseInt(param('id')) !== getTodayISTMidnightTS()) {
+        Swal.fire({
+          icon: 'error', title: 'Access Denied', text: 'You do not have permission to view this content.',
+          confirmButtonText: 'OK', allowOutsideClick: false
+        }).then(() => {
+          document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:var(--bg-dark-primary);color:var(--text-primary);padding:20px;text-align:center;"><div style="max-width:560px"><h2 style="font-size:24px; color: var(--danger-color);">🚫 Access Denied</h2></div></div>`;
+        });
+        throw new Error('Invalid or missing ID');
+    }
+
+    // --------------------
+    // Element Selectors
+    // --------------------
+    const video = document.getElementById('video');
+    const progressBar = document.getElementById('progressBar');
+    const screenshotBtn = document.getElementById('screenshotBtn');
+    const pipBtn = document.getElementById('pipBtn');
+    const noteBtn = document.getElementById('noteBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const noteDrawer = document.getElementById('noteDrawer');
+    const closeNotesBtn = document.getElementById('closeNotes');
+    const noteList = document.getElementById('noteList');
+    const noteInput = document.getElementById('noteInput');
+    const saveNoteBtn = document.getElementById('saveNoteBtn');
+
+    // --------------------
+    // Player State & Core Logic
+    // --------------------
+    const initialUrl = decodeURIComponent(param('lessonurl') || '').trim();
+    if (!initialUrl) {
+      Swal.fire({ icon: 'error', title: 'Missing URL', text: 'The "lessonurl" parameter is required.' });
+      throw new Error('Missing lessonurl');
+    }
+    const getBaseUrl = (url) => url.replace(/index_\d\.m3u8.*$/, '');
+    const baseUrl = getBaseUrl(initialUrl);
+    const resumeKey = `resume_${baseUrl}`;
+    const notesKey = `notes_${baseUrl}`;
+    let currentVideoUrl = initialUrl;
+    let hlsInstance = null;
+
+    function formatTime(s) {
+      if (!isFinite(s)) return '00:00';
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = Math.floor(s % 60);
+      return (h > 0 ? h + ':' : '') + String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+    }
+
+    function attachHls(url, resumeAt = 0) {
+      if (hlsInstance) { hlsInstance.destroy(); }
+      const playAfterSeek = () => {
+          video.play().catch(e => console.error("Autoplay prevented:", e));
+          video.removeEventListener('seeked', playAfterSeek);
+      };
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hlsInstance = hls;
+        hls.loadSource(url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          if (resumeAt > 1 && resumeAt < video.duration) { video.currentTime = resumeAt; }
+          video.play().catch(()=>{});
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = url;
+        video.addEventListener('loadedmetadata', () => {
+          if (resumeAt > 1 && resumeAt < video.duration) {
+            video.addEventListener('seeked', playAfterSeek, { once: true });
+            video.currentTime = resumeAt;
+          } else {
+            video.play().catch(()=>{});
+          }
+        }, { once: true });
+      }
+    }
+    
+    function initialLoad() {
+      const resumeParam = parseFloat(param('resume'));
+      const savedTime = parseFloat(localStorage.getItem(resumeKey) || '0');
+      if (!isNaN(resumeParam) && resumeParam > 0) {
+        attachHls(currentVideoUrl, resumeParam);
+      } else if (savedTime > 5) {
+        Swal.fire({
+          title: 'Resume Video?', text: `Continue watching from ${formatTime(savedTime)}?`,
+          icon: 'question', showCancelButton: true, confirmButtonText: 'Yes, Resume',
+          cancelButtonText: 'Start Over', customClass: { popup: 'swal-custom-light-theme' }
+        }).then(res => {
+          attachHls(currentVideoUrl, res.isConfirmed ? savedTime : 0);
+        });
+      } else {
+        attachHls(currentVideoUrl, 0);
+      }
+    }
+    initialLoad();
+
+    setInterval(() => {
+      if (!isNaN(video.currentTime) && video.duration > 0 && !video.paused) {
+        localStorage.setItem(resumeKey, video.currentTime);
+        const percent = (video.currentTime / video.duration) * 100;
+        progressBar.style.width = `${Math.min(100, percent)}%`;
+        let newColor = 'var(--danger-color)';
+        if (percent >= 70) newColor = 'var(--success-color)';
+        else if (percent >= 30) newColor = 'var(--warning-color)';
+        progressBar.style.background = newColor;
+        progressBar.style.boxShadow = `0 0 10px ${newColor}`;
+      }
+    }, 3000);
+
+    // --------------------
+    // SETTINGS MENU LOGIC
+    // --------------------
+    function showSpeedPopup() {
+        Swal.fire({
+            title: 'Playback Speed',
+            input: 'radio',
+            inputValue: video.playbackRate,
+            inputOptions: { '0.5': '0.5×', '0.75': '0.75×', '1': 'Normal (1×)', '1.25': '1.25×', '1.5': '1.5×', '2': '2×' },
+            showCancelButton: true, confirmButtonText: 'Set Speed',
+            customClass: { popup: 'swal-custom-light-theme' }
+        }).then(res => {
+            if(res.isConfirmed && res.value) { video.playbackRate = parseFloat(res.value); }
+        });
+    }
+
+    function showQualityPopup() {
+        Swal.fire({
+            title: 'Video Quality',
+            input: 'radio',
+            inputOptions: { index_1: '240p', index_2: '360p', index_3: '480p', index_4: '720p' },
+            showCancelButton: true, confirmButtonText: 'Change Quality',
+            customClass: { popup: 'swal-custom-light-theme' }
+        }).then(res => {
+            if(res.isConfirmed && res.value) {
+                const newQuality = res.value;
+                const currentTime = video.currentTime || 0;
+                currentVideoUrl = baseUrl ? `${baseUrl}${newQuality}.m3u8` : currentVideoUrl.replace(/index_\d\.m3u8/, `${newQuality}.m3u8`);
+                attachHls(currentVideoUrl, currentTime);
+            }
+        });
+    }
+
+    settingsBtn.addEventListener('click', () => {
+        Swal.fire({
+            title: 'Settings',
+            html: `
+              <div id="swal-menu-quality" class="swal-menu-button">
+                <i data-feather="hd"></i>
+                <span class="swal-menu-button-text">Change Quality</span>
+              </div>
+              <div id="swal-menu-speed" class="swal-menu-button">
+                <i data-feather="wind"></i>
+                <span class="swal-menu-button-text">Change Speed</span>
+              </div>
+            `,
+            showConfirmButton: false,
+            showCancelButton: true,
+            cancelButtonText: 'Close',
+            customClass: { popup: 'swal-custom-light-theme' },
+            didOpen: () => {
+                feather.replace();
+                document.getElementById('swal-menu-quality').addEventListener('click', () => {
+                    Swal.close();
+                    showQualityPopup();
+                });
+                document.getElementById('swal-menu-speed').addEventListener('click', () => {
+                    Swal.close();
+                    showSpeedPopup();
+                });
+            }
+        });
+    });
+
+    // --------------------
+    // NOTES SYSTEM LOGIC
+    // --------------------
+    function openNotes(){ noteDrawer.classList.add('open'); loadNotes(); }
+    function closeNotesDrawer(){ noteDrawer.classList.remove('open'); }
+    noteBtn.addEventListener('click', openNotes);
+    closeNotesBtn.addEventListener('click', closeNotesDrawer);
+    function escapeHtml(s){ return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function loadNotes(){
+      const notes = JSON.parse(localStorage.getItem(notesKey) || '[]');
+      noteList.innerHTML = '';
+      if (notes.length === 0) {
+        noteList.innerHTML = '<div style="opacity:.7;text-align:center;padding:20px;">No notes yet.</div>'; return;
+      }
+      notes.sort((a,b) => a.time - b.time).forEach(n => {
+          const el = document.createElement('div');
+          el.className = 'note-card';
+          el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div><div style='font-weight:700; color: var(--primary-accent);'>@ ${n.timestamp}</div><div style='opacity:.9;margin-top:6px;white-space:pre-wrap;'>${escapeHtml(n.text)}</div></div><div style='display:flex;gap:6px;'><button class='control-btn' data-action='jump' data-time='${n.time}' title="Jump">⏱️</button><button class='control-btn' data-action='edit' data-id='${n.id}' title="Edit">✏️</button><button class='control-btn' data-action="delete" data-id='${n.id}' title="Delete">🗑️</button></div></div>`;
+          noteList.appendChild(el);
+      });
+    }
+    noteList.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-action]'); if (!btn) return;
+      const action = btn.dataset.action;
+      let notes = JSON.parse(localStorage.getItem(notesKey) || '[]');
+      if (action === 'jump') { video.currentTime = parseFloat(btn.dataset.time || '0'); closeNotesDrawer(); }
+      else if (action === 'delete') {
+        notes = notes.filter(x => x.id !== parseInt(btn.dataset.id));
+        localStorage.setItem(notesKey, JSON.stringify(notes)); loadNotes();
+      } else if (action === 'edit') {
+        const note = notes.find(x => x.id === parseInt(btn.dataset.id)); if (!note) return;
+        Swal.fire({title:'Edit Note',input:'textarea',inputValue:note.text,showCancelButton:true, confirmButtonText: 'Save Changes'}).then(res => {
+          if (res.isConfirmed && res.value) {
+            note.text = res.value.trim();
+            localStorage.setItem(notesKey, JSON.stringify(notes)); loadNotes();
+          }
+        });
+      }
+    });
+    saveNoteBtn.addEventListener('click', () => {
+      const txt = (noteInput.value || '').trim();
+      if (!txt) return Swal.fire('Empty Note', 'Please write something.', 'warning');
+      const notes = JSON.parse(localStorage.getItem(notesKey) || '[]');
+      const now = Math.floor(video.currentTime || 0);
+      notes.push({ id: Date.now(), time: now, timestamp: formatTime(now), text: txt });
+      localStorage.setItem(notesKey, JSON.stringify(notes));
+      noteInput.value = '';
+      loadNotes();
+      Swal.fire({toast:true,icon:'success',title:'Note Saved!',position:'top-end',showConfirmButton:false,timer:1500});
+    });
+
+    // --------------------
+    // Other Controls (Screenshot, PiP)
+    // --------------------
+    screenshotBtn.addEventListener('click', () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = `StudySmarter-Screenshot-${Date.now()}.jpg`;
+          a.click();
+          URL.revokeObjectURL(a.href);
+        }, 'image/jpeg');
+      } catch (e) {
+        Swal.fire('Screenshot Failed', 'Could not capture frame. This may be due to browser security restrictions.', 'error');
+      }
+    });
+
+    if (!document.pictureInPictureEnabled) { pipBtn.style.display = 'none'; }
+    else { pipBtn.addEventListener('click', () => document.pictureInPictureElement ? document.exitPictureInPicture() : video.requestPictureInPicture()); }
+
+    // --------------------
+    // PAGE LOAD ANIMATION &  FINAL SETUP
+    // --------------------
+    feather.replace();
+    setTimeout(() => document.body.classList.add('loaded'), 100);
+});
+</script>
+</body>
+</html>
