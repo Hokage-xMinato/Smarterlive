@@ -561,18 +561,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-  function showQualityPopup() {
+    function showQualityPopup() {
     Swal.fire({
         title: 'Video Quality',
         input: 'radio',
-        inputOptions: { 
-            index_1: '240p', 
-            index_2: '360p', 
-            index_3: '480p', 
-            index_4: '720p' 
+        inputOptions: {
+            index_1: '240p',
+            index_2: '360p',
+            index_3: '480p',
+            index_4: '720p'
         },
         inputValue: currentVideoUrl.match(/index_\d+/)?.[0] || 'index_3',
-        showCancelButton: true, 
+        showCancelButton: true,
         confirmButtonText: 'Change Quality',
         customClass: { popup: 'swal-custom-light-theme' }
     }).then(res => {
@@ -581,8 +581,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Parse current URL
             const urlObj = new URL(currentVideoUrl);
-            const base = urlObj.origin + urlObj.pathname; 
-            const params = urlObj.search || ""; 
+            const base = urlObj.origin + urlObj.pathname;
+            const params = urlObj.search || "";
 
             // Replace only index_X.m3u8
             const newBase = base.replace(/index_\d+\.m3u8$/, `${res.value}.m3u8`);
@@ -590,14 +590,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             currentVideoUrl = newUrl;
 
-            // Save chosen quality
-            localStorage.setItem("lastQuality_" + lessonId, res.value);
+            // FIX: Replaced the undefined 'lessonId' with the existing 'baseUrl' variable.
+            localStorage.setItem("lastQuality_" + baseUrl, res.value);
 
             attachHls(currentVideoUrl, timeNow);
         }
     });
-  }
-  
+}
 
 
     settingsBtn.addEventListener('click', () => {
