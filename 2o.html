@@ -13,14 +13,16 @@
   <style>
     :root {
       --header-h: 60px;
-      --primary-accent: #3b82f6; /* Blue-500 */
-      --primary-accent-glow: rgba(59, 130, 246, 0.5);
-      --bg-dark-primary: #0f172a; /* Slate-900 */
-      --bg-dark-secondary: #1e293b; /* Slate-800 */
-      --border-color: #334155; /* Slate-700 */
-      --text-primary: #f8fafc; /* Slate-50 */
-      --text-secondary: #cbd5e1; /* Slate-300 */
-      --danger-color: #ef4444;
+      /* --- NEW Vibrant Violet Color Scheme --- */
+      --primary-accent: #8b5cf6; /* Violet-500 */
+      --primary-accent-glow: rgba(139, 92, 246, 0.5);
+      --primary-accent-gradient: linear-gradient(90deg, #a78bfa, #6d28d9);
+      --bg-dark-primary: #111827; /* Gray-900 */
+      --bg-dark-secondary: #1f2937; /* Gray-800 */
+      --border-color: #374151; /* Gray-700 */
+      --text-primary: #f9fafb; /* Gray-50 */
+      --text-secondary: #d1d5db; /* Gray-300 */
+      --danger-color: #f43f5e;
       --warning-color: #f59e0b;
       --success-color: #10b981;
     }
@@ -38,7 +40,7 @@
     .app-header {
       height: var(--header-h); display: flex; align-items: center; justify-content: space-between;
       padding: 0 24px; position: fixed; inset: 0 auto auto 0;
-      background: rgba(15, 23, 42, 0.7); border-bottom: 1px solid var(--border-color);
+      background: rgba(17, 24, 39, 0.7); border-bottom: 1px solid var(--border-color);
       box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 60; backdrop-filter: blur(12px);
     }
     .app-title { display: flex; align-items: center; gap: 12px; }
@@ -58,40 +60,53 @@
       transition: width .25s linear, background-color .5s ease, box-shadow .5s ease;
       border-radius: 0 3px 3px 0;
     }
-    #linksSection { max-width: 1200px; width: 100%; padding: 24px 0; margin-bottom: 48px; }
-    .links-title { font-weight: 700; font-size: 18px; margin-bottom: 16px; color: var(--text-secondary); text-align: center; }
-    .links-grid { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    
+    /* --- NEW ANIMATED SECTION STYLES --- */
+    #linksSection {
+        max-width: 1200px; width: 100%; padding: 48px 16px; margin-bottom: 48px;
+        position: relative; border-radius: 16px; overflow: hidden;
+        background: var(--bg-dark-secondary); border: 1px solid var(--border-color);
+    }
+    #particle-canvas {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        z-index: 1; pointer-events: none;
+    }
+    .links-title {
+        font-weight: 700; font-size: 20px; margin-bottom: 24px;
+        color: var(--text-primary); text-align: center; position: relative; z-index: 2;
+    }
+    .links-grid {
+        display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
+        position: relative; z-index: 2;
+    }
     .link-card {
-      display: flex; align-items: center; gap: 12px; background: var(--bg-dark-secondary);
+      display: flex; align-items: center; gap: 12px; background: rgba(17, 24, 39, 0.6);
+      backdrop-filter: blur(5px);
       padding: 12px 20px; border-radius: 10px; border: 1px solid var(--border-color);
       text-decoration: none; color: var(--text-primary); font-weight: 600;
       transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
-    .link-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-    .link-card[data-service="youtube"]:hover { border-color: #ff0000; color: #ff0000; }
-    .link-card[data-service="telegram"]:hover { border-color: #24A1DE; color: #24A1DE; }
-    .link-card[data-service="instagram"]:hover { border-color: #E4405F; color: #E4405F; }
-    .link-card[data-service="website"]:hover { border-color: var(--primary-accent); color: var(--primary-accent); }
+    .link-card:hover { transform: translateY(-4px); box-shadow: 0 0 20px var(--primary-accent-glow); border-color: var(--primary-accent); }
+    .link-card i { transition: color .25s; }
+    .link-card:hover i { color: var(--primary-accent); }
     
     /* --- NEW PLAYER STYLES START --- */
     #player-wrapper {
         width: 100%; max-width: 1200px; margin-top: 32px; margin-bottom: 32px;
         position: relative; font-size: 16px;
-        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7);
+        background: #000;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7), 0 0 40px var(--primary-accent-glow);
         border: 1px solid var(--border-color);
         border-radius: 16px; overflow: hidden;
     }
-    #player-wrapper.fullscreen {
-        max-width: none; width: 100%; height: 100%; border-radius: 0; border: 0; margin: 0;
-        position: fixed; top: 0; left: 0; z-index: 1000; background: #000;
-    }
-    #video { width: 100%; aspect-ratio: 16 / 9; display: block; background: #000; }
+    #player-wrapper.fullscreen { border-radius: 0; border: 0; }
+    #video { width: 100%; aspect-ratio: 16 / 9; display: block; }
     
     .video-controls {
         position: absolute; inset: 0;
         opacity: 1; transition: opacity .25s ease-in-out;
         z-index: 50;
-        background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 25%, transparent 50%);
+        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 30%, transparent 60%);
     }
     #player-wrapper.paused .video-controls, #player-wrapper:hover .video-controls { opacity: 1; }
     #player-wrapper:not(.paused) .video-controls.hide-controls { opacity: 0; cursor: none; }
@@ -105,73 +120,85 @@
 
     .center-play-pause {
         position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px);
+        background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(8px);
         border: 1px solid var(--border-color); border-radius: 50%;
         width: 80px; height: 80px; display: flex; justify-content: center; align-items: center;
         cursor: pointer; opacity: 0; transition: opacity 0.2s, transform 0.2s;
         pointer-events: none;
+        transform-origin: center;
     }
-    .center-play-pause svg { width: 40px; height: 40px; }
+    .center-play-pause svg { width: 40px; height: 40px; margin-left: 3px; }
     #player-wrapper.paused .center-play-pause { opacity: 1; pointer-events: auto; }
     #player-wrapper.paused .center-play-pause:hover { transform: translate(-50%, -50%) scale(1.1); }
+    #player-wrapper.animating-play .center-play-pause {
+        animation: center-play-pop 0.3s ease;
+    }
+    @keyframes center-play-pop {
+        0% { transform: translate(-50%, -50%) scale(0.9); opacity: 1; }
+        50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
+    /* --- NEW Double-Tap Overlay --- */
+    #seek-overlay { position: absolute; inset: 0; z-index: 49; display: flex; }
+    .seek-indicator {
+        flex: 1; height: 100%;
+        display: flex; justify-content: center; align-items: center;
+        color: white; font-size: 24px; font-weight: bold;
+        opacity: 0; transition: opacity 0.4s ease; pointer-events: none;
+        background: rgba(0,0,0,0.3);
+    }
+    .seek-indicator.active { opacity: 1; transition: opacity 0.1s ease; }
+    .seek-indicator i { width: 48px; height: 48px; }
 
     .controls-container {
         position: absolute; bottom: 0; left: 0; right: 0;
-        padding: 0 15px; display: flex; flex-direction: column;
+        padding: 5px 15px 10px 15px; display: flex; flex-direction: column;
     }
-
+    .progress-bar-container { padding: 5px 0; cursor: pointer; }
     #progress-bar {
         width: 100%; height: 5px; -webkit-appearance: none; appearance: none;
-        background: transparent; cursor: pointer;
+        background: rgba(255, 255, 255, 0.3); border-radius: 5px;
+        transition: height 0.2s ease;
         --progress-percent: 0%;
+        background-image: linear-gradient(to right, var(--primary-accent) var(--progress-percent), rgba(255, 255, 255, 0.3) var(--progress-percent));
     }
-    #progress-bar::-webkit-slider-runnable-track {
-        width: 100%; height: 5px; background: linear-gradient(to right, var(--primary-accent) var(--progress-percent), rgba(255, 255, 255, 0.3) var(--progress-percent));
-        border-radius: 5px;
-    }
-    #progress-bar::-moz-range-track {
-        width: 100%; height: 5px; background: linear-gradient(to right, var(--primary-accent) var(--progress-percent), rgba(255, 255, 255, 0.3) var(--progress-percent));
-        border-radius: 5px;
-    }
+    .progress-bar-container:hover #progress-bar { height: 8px; }
     #progress-bar::-webkit-slider-thumb {
         -webkit-appearance: none; appearance: none;
         height: 16px; width: 16px; border-radius: 50%; background: var(--text-primary);
-        margin-top: -5.5px; transform: scale(0); transition: transform 0.2s;
+        box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        transform: scale(0); transition: transform 0.2s;
     }
-    #progress-bar::-moz-range-thumb {
-        height: 16px; width: 16px; border-radius: 50%; background: var(--text-primary);
-        border: 0; transform: scale(0); transition: transform 0.2s;
-    }
-    .controls-container:hover #progress-bar::-webkit-slider-thumb, .controls-container:hover #progress-bar::-moz-range-thumb { transform: scale(1); }
-
-    .bottom-controls {
-        display: flex; justify-content: space-between; align-items: center;
-        height: 50px;
-    }
-    .controls-left, .controls-right { display: flex; align-items: center; gap: 10px; }
+    .progress-bar-container:hover #progress-bar::-webkit-slider-thumb { transform: scale(1); }
+    
+    .bottom-controls { display: flex; justify-content: space-between; align-items: center; height: 40px; }
+    .controls-left, .controls-right { display: flex; align-items: center; gap: 8px; }
     .control-btn {
         background: none; border: none; color: var(--text-secondary);
         padding: 8px; border-radius: 8px; cursor: pointer;
         display: flex; align-items: center; justify-content: center;
         transition: all .2s;
     }
-    .control-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
-    .control-btn svg { width: 20px; height: 20px; }
-    .time-display { font-size: 14px; font-weight: 500; color: var(--text-primary); width: 110px; }
+    .control-btn:hover { color: var(--text-primary); transform: scale(1.1); }
+    .control-btn svg { width: 22px; height: 22px; }
+    .time-display { font-size: 14px; font-weight: 500; color: var(--text-primary); }
     .volume-container { display: flex; align-items: center; }
     #volume-slider {
         width: 0; max-width: 80px; -webkit-appearance: none; appearance: none;
         background: transparent; cursor: pointer; transition: width 0.2s ease-in-out;
+        --volume-percent: 100%;
     }
     .volume-container:hover #volume-slider { width: 80px; }
-    #volume-slider::-webkit-slider-runnable-track { height: 4px; background: rgba(255,255,255,0.3); border-radius: 4px; }
-    #volume-slider::-moz-range-track { height: 4px; background: rgba(255,255,255,0.3); border-radius: 4px; }
+    #volume-slider::-webkit-slider-runnable-track {
+        height: 4px; border-radius: 4px;
+        background-image: linear-gradient(to right, var(--text-primary) var(--volume-percent), rgba(255, 255, 255, 0.3) var(--volume-percent));
+    }
     #volume-slider::-webkit-slider-thumb {
         -webkit-appearance: none; appearance: none;
         height: 14px; width: 14px; border-radius: 50%; background: var(--text-primary); margin-top: -5px;
     }
-    #volume-slider::-moz-range-thumb { height: 14px; width: 14px; border-radius: 50%; background: var(--text-primary); border: 0; }
-    /* --- NEW PLAYER STYLES END --- */
+    /* --- PLAYER STYLES END --- */
     
     #noteDrawer {
       position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg-dark-secondary);
@@ -187,37 +214,34 @@
     #saveNoteBtn { background: var(--primary-accent); color: #fff; padding: 12px 16px; border-radius: 8px }
     #saveNoteBtn:hover { filter: brightness(1.1); }
     
-    /* SweetAlert styles remain the same */
+    /* SweetAlert styles updated for new theme */
+    .swal-custom-light-theme .swal2-confirm { background-color: var(--primary-accent) !important; }
+    .swal-menu-button:hover { border-color: var(--primary-accent); color: var(--primary-accent); }
+    .swal-menu-button i { color: var(--primary-accent); }
+    .swal-custom-light-theme .swal2-radio input:checked + span { color: var(--primary-accent) !important; }
+    
+    /* (Other SweetAlert styles from previous version remain) */
     .swal2-popup.swal-custom-light-theme { background: #fff !important; color: #1f2937 !important; border-radius: 16px !important; }
     .swal-custom-light-theme .swal2-title { color: #111827 !important; font-weight: 700; }
     .swal-custom-light-theme .swal2-html-container { color: #4b5563 !important; }
-    .swal-custom-light-theme .swal2-confirm { background-color: var(--primary-accent) !important; border-radius: 8px !important; }
     .swal-custom-light-theme .swal2-cancel { border-radius: 8px !important; }
     .swal-menu-button { display: flex; align-items: center; gap: 16px; padding: 16px; border-radius: 12px; border: 1px solid #e5e7eb; cursor: pointer; transition: all .2s ease; margin-bottom: 12px; }
-    .swal-menu-button:hover { border-color: var(--primary-accent); background: #eff6ff; color: var(--primary-accent); }
-    .swal-menu-button i { color: var(--primary-accent); }
     .swal-menu-button-text { font-size: 16px; font-weight: 600; }
     .swal-custom-light-theme .swal2-radio { display: grid !important; grid-template-columns: 1fr 1fr; gap: 12px; margin: 24px 0 !important; }
     .swal-custom-light-theme .swal2-radio label { margin: 0 !important; border: 1px solid #d1d5db; border-radius: 8px; padding: 14px; transition: .2s; font-weight: 500; }
     .swal-custom-light-theme .swal2-radio label:hover { background: #f9fafb; }
-    .swal-custom-light-theme .swal2-radio input:checked + span { color: var(--primary-accent) !important; font-weight: 700; }
 
     @media(max-width: 768px) {
       .app-header { padding: 0 16px; }
       main { padding: var(--header-h) 0 0 0; }
       #player-wrapper { margin: 0; border-radius: 0; border-left: none; border-right: none; }
-      #linksSection { padding: 24px 16px; }
-      .volume-container { display: none; } /* Hide volume slider on mobile, volume is controlled by device buttons */
-      .time-display { width: auto; }
+      .controls-right .volume-container { display: none; }
       .controls-left, .controls-right { gap: 0px; }
     }
   </style>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-9BLQD92B7R"></script>
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-9BLQD92B7R');
+    window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-9BLQD92B7R');
   </script>
   <script id="chatway" async="true" src="https://cdn.chatway.app/widget.js?id=OfI94qsPGFz1"></script>
 </head>
@@ -232,26 +256,34 @@
   <main>
     <div id="player-wrapper" class="animated-content paused" style="transition-delay: 0.1s;">
         <div id="video-watermark"><img src="https://i.imgur.com/fTOETxW.jpeg" alt="Video Watermark"/></div>
+        
+        <div id="seek-overlay">
+          <div class="seek-indicator" id="seek-backward-indicator"><i data-feather="rotate-ccw"></i>-10s</div>
+          <div class="seek-indicator" id="seek-forward-indicator">+10s<i data-feather="rotate-cw"></i></div>
+        </div>
+
         <video id="video" crossorigin="anonymous" playsinline preload="metadata" poster="https://placehold.co/1200x675/111827/ffffff?text=Loading+Video..."></video>
         
         <div class="video-controls">
             <div class="center-play-pause" id="centerPlayPauseBtn">
-                <i data-feather="play" style="margin-left: 5px;"></i>
+              <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" class="play-icon-path"></path></svg>
             </div>
             <div class="controls-container">
-                <input type="range" id="progress-bar" value="0" min="0" max="100" step="0.1">
+                <div class="progress-bar-container">
+                  <input type="range" id="progress-bar" value="0" min="0" max="100" step="0.1">
+                </div>
                 <div class="bottom-controls">
                     <div class="controls-left">
                         <button class="control-btn" id="playPauseBtn" title="Play/Pause"><i data-feather="play"></i></button>
-                        <div class="volume-container">
-                            <button class="control-btn" id="volumeBtn" title="Mute/Unmute"><i data-feather="volume-2"></i></button>
-                            <input type="range" id="volume-slider" value="1" min="0" max="1" step="0.05">
-                        </div>
                         <div class="time-display" id="timeDisplay">00:00 / 00:00</div>
                     </div>
                     <div class="controls-right">
                         <button class="control-btn" id="noteBtn" title="Notes"><i data-feather="edit-2"></i></button>
                         <button class="control-btn" id="screenshotBtn" title="Take Screenshot"><i data-feather="camera"></i></button>
+                        <div class="volume-container">
+                            <button class="control-btn" id="volumeBtn" title="Mute/Unmute"><i data-feather="volume-2"></i></button>
+                            <input type="range" id="volume-slider" value="1" min="0" max="1" step="0.05">
+                        </div>
                         <button class="control-btn" id="pipBtn" title="Miniplayer (PiP)"><i data-feather="airplay"></i></button>
                         <button class="control-btn" id="settingsBtn" title="Settings"><i data-feather="settings"></i></button>
                         <button class="control-btn" id="fullscreenBtn" title="Fullscreen"><i data-feather="maximize"></i></button>
@@ -262,12 +294,13 @@
     </div>
 
     <section id="linksSection" class="animated-content" style="transition-delay: 0.2s;">
+      <canvas id="particle-canvas"></canvas>
       <h3 class="links-title">Connect With Us</h3>
       <div class="links-grid">
-        <a href="https://t.me/aarambh_batch_10" class="link-card" target="_blank" data-service="youtube"><i data-feather="youtube"></i><span>Aarambh Batch</span></a>
-        <a href="https://t.me/studysmarterhub" class="link-card" target="_blank" data-service="telegram"><i data-feather="send"></i><span>Backup Channel</span></a>
-        <a href="https://t.me/prarambh_batch_11" class="link-card" target="_blank" data-service="telegram"><i data-feather="send"></i><span>Prarambh Batch</span></a>
-        <a href="https://smartrz.vercel.app" class="link-card" target="_blank" data-service="website"><i data-feather="globe"></i><span>Doubt Solver AI</span></a>
+        <a href="https://t.me/aarambh_batch_10" class="link-card" target="_blank"><i data-feather="youtube"></i><span>Aarambh Batch</span></a>
+        <a href="https://t.me/studysmarterhub" class="link-card" target="_blank"><i data-feather="send"></i><span>Backup Channel</span></a>
+        <a href="https://t.me/prarambh_batch_11" class="link-card" target="_blank"><i data-feather="send"></i><span>Prarambh Batch</span></a>
+        <a href="https://smartrz.vercel.app" class="link-card" target="_blank"><i data-feather="globe"></i><span>Doubt Solver AI</span></a>
       </div>
     </section>
   </main>
@@ -285,426 +318,189 @@
   </div>
 
   <script>
-    // Telegram link
-    const telegramLink = 'https://t.me/studysmarterhub';
-    
-    // Inject Google Font
-    const googleFont = document.createElement('link');
-    googleFont.href = 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap';
-    googleFont.rel = 'stylesheet';
-    document.head.appendChild(googleFont);
-    
-    // Inject CSS
-    const style = document.createElement('style');
-    style.innerHTML = `
-    * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-    #telegramPopup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #fdfbfb, #ebedee), url('https://www.transparenttextures.com/patterns/cubes.png'); border-radius: 25px; box-shadow: 0 16px 60px rgba(0, 0, 0, 0.25); padding: 40px 35px; z-index: 9999; max-width: 90%; width: 440px; text-align: center; animation: fadeIn 0.6s ease-out; }
-    #telegramPopup h2 { font-size: 28px; color: #002244; font-weight: 700; margin-bottom: 12px; }
-    #telegramPopup p { font-size: 17px; color: #333; margin-bottom: 30px; line-height: 1.6; }
-    .button-container { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
-    .telegram-btn { background: linear-gradient(135deg, #0088cc, #005f99); color: #fff; border: none; border-radius: 50px; padding: 14px 30px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
-    .telegram-btn:hover { transform: scale(1.06); box-shadow: 0 8px 24px rgba(0, 136, 204, 0.4); }
-    .later-btn { background: #e0e0e0; color: #333; border: none; border-radius: 50px; padding: 13px 28px; font-size: 15px; font-weight: 500; cursor: pointer; transition: background 0.3s ease; }
-    .later-btn:hover { background: #ccc; }
-    #telegramReminder { position: fixed; top: 20px; right: 25px; background: linear-gradient(135deg, #f9f9f9, #eef7ff); border-left: 5px solid #0088cc; border-radius: 14px; box-shadow: 0 6px 25px rgba(0,0,0,0.1); padding: 20px 25px; z-index: 9998; font-family: 'Poppins', sans-serif; width: 300px; display: none; animation: slideDown 0.5s ease-out; }
-    #telegramReminder strong { font-size: 15px; color: #003366; }
-    #telegramReminder a { display: inline-block; margin-top: 10px; color: #0088cc; text-decoration: none; font-weight: 600; }
-    #telegramReminder a:hover { text-decoration: underline; }
-    #closeReminder { position: absolute; top: 8px; right: 12px; background: transparent; border: none; font-size: 18px; cursor: pointer; color: #888; font-weight: bold; }
-    @keyframes fadeIn { from { opacity: 0; transform: scale(0.95) translate(-50%, -50%); } to { opacity: 1; transform: scale(1) translate(-50%, -50%); } }
-    @keyframes slideDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
-    `;
-    document.head.appendChild(style);
-    
-    // Show popup only once per session
-    if (!sessionStorage.getItem('telegramPopupDismissed')) {
-      const popup = document.createElement('div');
-      popup.id = 'telegramPopup';
-      popup.innerHTML = `<h2>📢 Stay Smart, Study Smarter!</h2> <p>Join our Telegram for fresh updates, exclusive resources & daily motivation — only for learners like you!</p> <div class="button-container"> <button class="telegram-btn" onclick="window.open('${telegramLink}', '_blank')">💬 Join Telegram</button> <button class="later-btn" onclick="hideTelegramPopup()">Maybe Later</button> </div>`;
-      document.body.appendChild(popup);
-    }
-    
-    // Create Reminder Notification
-    const reminder = document.createElement('div');
-    reminder.id = 'telegramReminder';
-    reminder.innerHTML = `<button id="closeReminder" onclick="this.parentElement.style.display='none'">×</button> <strong>🚀 Don't forget to join our smart learners!</strong> <br/> <a href="${telegramLink}" target="_blank">👉 Join Telegram</a>`;
-    document.body.appendChild(reminder);
-    
-    // Hide main popup and show reminder
-    window.hideTelegramPopup = function() {
-      const popup = document.getElementById('telegramPopup');
-      if (popup) popup.style.display = 'none';
-      sessionStorage.setItem('telegramPopupDismissed', 'true');
-      setTimeout(() => { document.getElementById('telegramReminder').style.display = 'block'; }, 600);
-    };
-  </script>
-  
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      function decodeBase64(encodedString) { return atob(encodedString); }
-      const encodedDomain = "c21hcnRlcmxpdmUubmV0bGlmeS5hcHA=";
-      const decodedDomain = decodeBase64(encodedDomain);
-      const currentDomain = window.location.hostname;
-      function checkDomain() {
-        if (currentDomain !== decodedDomain) {
-          if (window !== window.top) {
-            const parentDomain = window.top.location.hostname;
-            if (parentDomain !== decodedDomain) { window.location.replace("denied.html"); }
-          } else { window.location.replace("denied.html"); }
-        }
-      }
-      checkDomain();
-    });
+    const telegramLink='https://t.me/studysmarterhub';const googleFont=document.createElement('link');googleFont.href='https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap';googleFont.rel='stylesheet';document.head.appendChild(googleFont);const style=document.createElement('style');style.innerHTML=`* { box-sizing: border-box; font-family: 'Poppins', sans-serif; } #telegramPopup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #fdfbfb, #ebedee), url('https://www.transparenttextures.com/patterns/cubes.png'); border-radius: 25px; box-shadow: 0 16px 60px rgba(0, 0, 0, 0.25); padding: 40px 35px; z-index: 9999; max-width: 90%; width: 440px; text-align: center; animation: fadeIn 0.6s ease-out; } #telegramPopup h2 { font-size: 28px; color: #002244; font-weight: 700; margin-bottom: 12px; } #telegramPopup p { font-size: 17px; color: #333; margin-bottom: 30px; line-height: 1.6; } .button-container { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; } .telegram-btn { background: linear-gradient(135deg, #0088cc, #005f99); color: #fff; border: none; border-radius: 50px; padding: 14px 30px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; } .telegram-btn:hover { transform: scale(1.06); box-shadow: 0 8px 24px rgba(0, 136, 204, 0.4); } .later-btn { background: #e0e0e0; color: #333; border: none; border-radius: 50px; padding: 13px 28px; font-size: 15px; font-weight: 500; cursor: pointer; transition: background 0.3s ease; } .later-btn:hover { background: #ccc; } #telegramReminder { position: fixed; top: 20px; right: 25px; background: linear-gradient(135deg, #f9f9f9, #eef7ff); border-left: 5px solid #0088cc; border-radius: 14px; box-shadow: 0 6px 25px rgba(0,0,0,0.1); padding: 20px 25px; z-index: 9998; font-family: 'Poppins', sans-serif; width: 300px; display: none; animation: slideDown 0.5s ease-out; } #telegramReminder strong { font-size: 15px; color: #003366; } #telegramReminder a { display: inline-block; margin-top: 10px; color: #0088cc; text-decoration: none; font-weight: 600; } #telegramReminder a:hover { text-decoration: underline; } #closeReminder { position: absolute; top: 8px; right: 12px; background: transparent; border: none; font-size: 18px; cursor: pointer; color: #888; font-weight: bold; } @keyframes fadeIn { from { opacity: 0; transform: scale(0.95) translate(-50%, -50%); } to { opacity: 1; transform: scale(1) translate(-50%, -50%); } } @keyframes slideDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }`;document.head.appendChild(style);if(!sessionStorage.getItem('telegramPopupDismissed')){const popup=document.createElement('div');popup.id='telegramPopup';popup.innerHTML=`<h2>📢 Stay Smart, Study Smarter!</h2> <p>Join our Telegram for fresh updates, exclusive resources & daily motivation — only for learners like you!</p> <div class="button-container"> <button class="telegram-btn" onclick="window.open('${telegramLink}', '_blank')">💬 Join Telegram</button> <button class="later-btn" onclick="hideTelegramPopup()">Maybe Later</button> </div>`;document.body.appendChild(popup);} const reminder=document.createElement('div');reminder.id='telegramReminder';reminder.innerHTML=`<button id="closeReminder" onclick="this.parentElement.style.display='none'">×</button> <strong>🚀 Don't forget to join our smart learners!</strong> <br/> <a href="${telegramLink}" target="_blank">👉 Join Telegram</a>`;document.body.appendChild(reminder);window.hideTelegramPopup=function(){const popup=document.getElementById('telegramPopup');if(popup)popup.style.display='none';sessionStorage.setItem('telegramPopupDismissed','true');setTimeout(()=>{document.getElementById('telegramReminder').style.display='block';},600);};
+    document.addEventListener("DOMContentLoaded",function(){function a(a){return atob(a)}const b="c21hcnRlcmxpdmUubmV0bGlmeS5hcHA=",c=a(b),d=window.location.hostname;function e(){if(d!==c)if(window!==window.top){const a=window.top.location.hostname;a!==c&&window.location.replace("denied.html")}else window.location.replace("denied.html")}e()});
   </script>
   
   <script>
   document.addEventListener('DOMContentLoaded', () => {
-    // --------------------
-    // CONTENT PROTECTION (Unchanged)
-    // --------------------
+    // --- PARTICLE ANIMATION SCRIPT ---
+    const canvas = document.getElementById('particle-canvas');
+    const linksSection = document.getElementById('linksSection');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+        canvas.width = linksSection.offsetWidth;
+        canvas.height = linksSection.offsetHeight;
+    }
+
+    function createParticles() {
+        particles = [];
+        const particleCount = Math.floor(canvas.width * canvas.height / 15000); // Adjust density
+        for (let i = 0; i < particleCount; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                radius: Math.random() * 1.5 + 1
+            });
+        }
+    }
+
+    function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+
+            if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+            if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(139, 92, 246, 0.5)';
+            ctx.fill();
+        });
+
+        for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+                const dx = particles[i].x - particles[j].x;
+                const dy = particles[i].y - particles[j].y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 120) {
+                    ctx.beginPath();
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.strokeStyle = `rgba(139, 92, 246, ${1 - dist / 120})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(animateParticles);
+    }
+    
+    resizeCanvas();
+    createParticles();
+    animateParticles();
+    window.addEventListener('resize', () => {
+        resizeCanvas();
+        createParticles();
+    });
+
+    // --- Core Player Logic ---
     const preventDefaultAction = e => e.preventDefault();
     document.addEventListener('contextmenu', preventDefaultAction);
     document.addEventListener('copy', preventDefaultAction);
-    document.addEventListener('keydown', e => {
-      if ((e.ctrlKey && (e.key === 'U' || e.key === 'S' || e.key === 'C')) ||
-          (e.ctrlKey && e.shiftKey && e.key === 'I') || e.key === 'F12') {
-        preventDefaultAction(e);
-      }
-    });
+    document.addEventListener('keydown', e => { if ((e.ctrlKey&&(e.key==='U'||e.key==='S'||e.key==='C'))||(e.ctrlKey&&e.shiftKey&&e.key==='I')||e.key==='F12') { preventDefaultAction(e); } });
 
-    // --------------------
-    // ID Check & Initial Setup (Unchanged)
-    // --------------------
-    function getTodayISTMidnightTS() {
-      const now = new Date();
-      now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-      const istDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-      istDate.setHours(0, 0, 0, 0);
-      return Math.floor(istDate.getTime() / 1000);
-    }
-    function param(name) { return new URLSearchParams(window.location.search).get(name); }
-    if (!param('id') || parseInt(param('id')) !== getTodayISTMidnightTS()) {
-        Swal.fire({
-          icon: 'error', title: 'Access Denied', text: 'You do not have permission to view this content.',
-          confirmButtonText: 'OK', allowOutsideClick: false
-        }).then(() => {
-          document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:var(--bg-dark-primary);color:var(--text-primary);padding:20px;text-align:center;"><div style="max-width:560px"><h2 style="font-size:24px; color: var(--danger-color);">🚫 Access Denied</h2></div></div>`;
-        });
-        throw new Error('Invalid or missing ID');
-    }
+    function getTodayISTMidnightTS(){ const now=new Date(); now.toLocaleString('en-US',{timeZone:'Asia/Kolkata'}); const istDate=new Date(now.toLocaleString('en-US',{timeZone:'Asia/Kolkata'})); istDate.setHours(0,0,0,0); return Math.floor(istDate.getTime()/1000); }
+    function param(name){ return new URLSearchParams(window.location.search).get(name); }
+    if(!param('id')||parseInt(param('id'))!==getTodayISTMidnightTS()){ Swal.fire({icon:'error',title:'Access Denied',text:'You do not have permission to view this content.',confirmButtonText:'OK',allowOutsideClick:false}).then(()=>{ document.body.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:var(--bg-dark-primary);color:var(--text-primary);padding:20px;text-align:center;"><div style="max-width:560px"><h2 style="font-size:24px; color: var(--danger-color);">🚫 Access Denied</h2></div></div>`; }); throw new Error('Invalid or missing ID'); }
 
-    // --------------------
-    // NEW & UPDATED Element Selectors
-    // --------------------
     const playerWrapper = document.getElementById('player-wrapper');
     const video = document.getElementById('video');
     const videoControls = document.querySelector('.video-controls');
     const topProgressBar = document.getElementById('top-progress-bar');
     const playPauseBtn = document.getElementById('playPauseBtn');
     const centerPlayPauseBtn = document.getElementById('centerPlayPauseBtn');
+    const centerPlayPauseIcon = centerPlayPauseBtn.querySelector('svg');
+    const playIconPath = "M8,5.14V19.14L19,12.14L8,5.14Z";
+    const pauseIconPath = "M14.25,19.5H18.75V4.5H14.25V19.5M5.25,19.5H9.75V4.5H5.25V19.5Z";
+
     const volumeBtn = document.getElementById('volumeBtn');
     const volumeSlider = document.getElementById('volume-slider');
     const timeDisplay = document.getElementById('timeDisplay');
     const progressBar = document.getElementById('progress-bar');
     const fullscreenBtn = document.getElementById('fullscreenBtn');
     
-    // Tool buttons now inside the player
     const screenshotBtn = document.getElementById('screenshotBtn');
     const pipBtn = document.getElementById('pipBtn');
     const noteBtn = document.getElementById('noteBtn');
     const settingsBtn = document.getElementById('settingsBtn');
+    const seekOverlay = document.getElementById('seek-overlay');
     
-    // Notes system elements (unchanged)
     const noteDrawer = document.getElementById('noteDrawer');
     const closeNotesBtn = document.getElementById('closeNotes');
     const noteList = document.getElementById('noteList');
     const noteInput = document.getElementById('noteInput');
     const saveNoteBtn = document.getElementById('saveNoteBtn');
 
-    // --------------------
-    // Player State & Core Logic (Unchanged core, new UI hooks)
-    // --------------------
-    const initialUrl = decodeURIComponent(param('lessonurl') || '').trim();
-    if (!initialUrl) {
-      Swal.fire({ icon: 'error', title: 'Missing URL', text: 'The url is required.' });
-      throw new Error('Missing lessonurl');
-    }
-    const getBaseUrl = (url) => url.replace(/index_\d\.m3u8.*$/, '');
-    const baseUrl = getBaseUrl(initialUrl);
-    const resumeKey = `resume_${baseUrl}`;
-    const notesKey = `notes_${baseUrl}`;
-    let currentVideoUrl = initialUrl;
-    let hlsInstance = null;
+    const initialUrl=decodeURIComponent(param('lessonurl')||'').trim(); if(!initialUrl){Swal.fire({icon:'error',title:'Missing URL',text:'The url is required.'}); throw new Error('Missing lessonurl');} const getBaseUrl=url=>url.replace(/index_\d\.m3u8.*$/,''); const baseUrl=getBaseUrl(initialUrl); const resumeKey=`resume_${baseUrl}`; const notesKey=`notes_${baseUrl}`; let currentVideoUrl=initialUrl; let hlsInstance=null;
 
-    function formatTime(s) {
-      if (!isFinite(s)) return '00:00';
-      const h = Math.floor(s / 3600);
-      const m = Math.floor((s % 3600) / 60);
-      const sec = Math.floor(s % 60);
-      return (h > 0 ? h + ':' : '') + String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
-    }
-
-    function attachHls(url, resumeAt = 0) {
-      if (hlsInstance) { hlsInstance.destroy(); }
-      if (Hls.isSupported()) {
-        const hls = new Hls();
-        hlsInstance = hls;
-        hls.loadSource(url);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          if (resumeAt > 1 && resumeAt < video.duration) { video.currentTime = resumeAt; }
-          video.play().catch(()=>{});
-        });
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = url;
-        video.addEventListener('loadedmetadata', () => {
-          if (resumeAt > 1 && resumeAt < video.duration) { video.currentTime = resumeAt; }
-          video.play().catch(()=>{});
-        }, { once: true });
-      }
-    }
-    
-    function initialLoad() {
-      const resumeParam = parseFloat(param('resume'));
-      const savedTime = parseFloat(localStorage.getItem(resumeKey) || '0');
-      if (!isNaN(resumeParam) && resumeParam > 0) {
-        attachHls(currentVideoUrl, resumeParam);
-      } else if (savedTime > 5) {
-        Swal.fire({
-          title: 'Resume Video?', text: `Continue watching from ${formatTime(savedTime)}?`,
-          icon: 'question', showCancelButton: true, confirmButtonText: 'Yes, Resume',
-          cancelButtonText: 'Start Over', customClass: { popup: 'swal-custom-light-theme' }
-        }).then(res => {
-          attachHls(currentVideoUrl, res.isConfirmed ? savedTime : 0);
-        });
-      } else {
-        attachHls(currentVideoUrl, 0);
-      }
-    }
+    function formatTime(s){if(!isFinite(s))return'00:00';const h=Math.floor(s/3600);const m=Math.floor((s%3600)/60);const sec=Math.floor(s%60);return(h>0?h+':':'')+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');}
+    function attachHls(url,resumeAt=0){if(hlsInstance){hlsInstance.destroy();}if(Hls.isSupported()){const hls=new Hls();hlsInstance=hls;hls.loadSource(url);hls.attachMedia(video);hls.on(Hls.Events.MANIFEST_PARSED,()=>{if(resumeAt>1&&resumeAt<video.duration){video.currentTime=resumeAt;}video.play().catch(()=>{});});}else if(video.canPlayType('application/vnd.apple.mpegurl')){video.src=url;video.addEventListener('loadedmetadata',()=>{if(resumeAt>1&&resumeAt<video.duration){video.currentTime=resumeAt;}video.play().catch(()=>{});},{once:true});}}
+    function initialLoad(){const resumeParam=parseFloat(param('resume'));const savedTime=parseFloat(localStorage.getItem(resumeKey)||'0');if(!isNaN(resumeParam)&&resumeParam>0){attachHls(currentVideoUrl,resumeParam);}else if(savedTime>5){Swal.fire({title:'Resume Video?',text:`Continue watching from ${formatTime(savedTime)}?`,icon:'question',showCancelButton:true,confirmButtonText:'Yes, Resume',cancelButtonText:'Start Over',customClass:{popup:'swal-custom-light-theme'}}).then(res=>{attachHls(currentVideoUrl,res.isConfirmed?savedTime:0);});}else{attachHls(currentVideoUrl,0);}}
     initialLoad();
-
-    setInterval(() => {
-      if (!isNaN(video.currentTime) && video.duration > 0 && !video.paused) {
-        localStorage.setItem(resumeKey, video.currentTime);
-      }
-    }, 3000);
+    setInterval(()=>{if(!isNaN(video.currentTime)&&video.duration>0&&!video.paused){localStorage.setItem(resumeKey,video.currentTime);}},3000);
     
-    // --------------------
-    // NEW - CUSTOM PLAYER UI LOGIC
-    // --------------------
-    const setPlayIcon = () => { playPauseBtn.innerHTML = `<i data-feather="play"></i>`; centerPlayPauseBtn.innerHTML = `<i data-feather="play" style="margin-left: 5px;"></i>`; feather.replace(); };
-    const setPauseIcon = () => { playPauseBtn.innerHTML = `<i data-feather="pause"></i>`; centerPlayPauseBtn.innerHTML = `<i data-feather="pause"></i>`; feather.replace(); };
+    const setPlayIcon=()=>{playPauseBtn.innerHTML=`<i data-feather="play"></i>`;centerPlayPauseIcon.querySelector('path').setAttribute('d',playIconPath);feather.replace();};
+    const setPauseIcon=()=>{playPauseBtn.innerHTML=`<i data-feather="pause"></i>`;centerPlayPauseIcon.querySelector('path').setAttribute('d',pauseIconPath);feather.replace();};
+    function togglePlay(){if(video.paused||video.ended){video.play();}else{video.pause();}}
     
-    function togglePlay() {
-        if (video.paused || video.ended) { video.play(); } else { video.pause(); }
-    }
+    video.addEventListener('play',()=>{playerWrapper.classList.remove('paused');setPauseIcon();playerWrapper.classList.add('animating-play');setTimeout(()=>playerWrapper.classList.remove('animating-play'),300);});
+    video.addEventListener('pause',()=>{playerWrapper.classList.add('paused');setPlayIcon();});
     
-    video.addEventListener('play', () => { playerWrapper.classList.remove('paused'); setPauseIcon(); });
-    video.addEventListener('pause', () => { playerWrapper.classList.add('paused'); setPlayIcon(); });
-    video.addEventListener('click', togglePlay);
-    playPauseBtn.addEventListener('click', togglePlay);
     centerPlayPauseBtn.addEventListener('click', togglePlay);
-
-    video.addEventListener('timeupdate', () => {
-        const percent = (video.currentTime / video.duration) * 100;
-        progressBar.value = percent;
-        progressBar.style.setProperty('--progress-percent', `${percent}%`);
-        topProgressBar.style.width = `${Math.min(100, percent)}%`;
-        
-        let newColor = 'var(--danger-color)';
-        if (percent >= 70) newColor = 'var(--success-color)';
-        else if (percent >= 30) newColor = 'var(--warning-color)';
-        topProgressBar.style.background = newColor;
-        topProgressBar.style.boxShadow = `0 0 10px ${newColor}`;
-
-        timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
-    });
-
-    video.addEventListener('loadedmetadata', () => {
-        timeDisplay.textContent = `00:00 / ${formatTime(video.duration)}`;
-    });
-
-    progressBar.addEventListener('input', () => {
-        const time = (progressBar.value / 100) * video.duration;
-        video.currentTime = time;
-    });
-
-    volumeSlider.addEventListener('input', () => {
-        video.volume = volumeSlider.value;
-        video.muted = volumeSlider.value === 0;
-    });
-
-    video.addEventListener('volumechange', () => {
-        volumeSlider.value = video.volume;
-        if(video.muted || video.volume === 0) {
-            volumeBtn.innerHTML = `<i data-feather="volume-x"></i>`;
-        } else if (video.volume < 0.5) {
-            volumeBtn.innerHTML = `<i data-feather="volume-1"></i>`;
-        } else {
-            volumeBtn.innerHTML = `<i data-feather="volume-2"></i>`;
-        }
-        feather.replace();
-    });
-
-    volumeBtn.addEventListener('click', () => {
-        video.muted = !video.muted;
-    });
-
-    fullscreenBtn.addEventListener('click', () => {
-        if (!document.fullscreenElement) {
-            playerWrapper.requestFullscreen().catch(err => {
-                alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-            });
-        } else {
-            document.exitFullscreen();
-        }
-    });
-
-    document.addEventListener('fullscreenchange', () => {
-        playerWrapper.classList.toggle('fullscreen', !!document.fullscreenElement);
-        if (document.fullscreenElement) {
-            fullscreenBtn.innerHTML = `<i data-feather="minimize"></i>`;
-        } else {
-            fullscreenBtn.innerHTML = `<i data-feather="maximize"></i>`;
-        }
-        feather.replace();
-    });
-
-    let controlsTimeout;
-    function hideControls() { videoControls.classList.add('hide-controls'); }
-    playerWrapper.addEventListener('mousemove', () => {
-        videoControls.classList.remove('hide-controls');
-        clearTimeout(controlsTimeout);
-        controlsTimeout = setTimeout(hideControls, 3000);
-    });
-    playerWrapper.addEventListener('mouseleave', hideControls);
-
-
-    // --------------------
-    // SETTINGS MENU LOGIC (Unchanged)
-    // --------------------
-    function showSpeedPopup() {
-      Swal.fire({
-          title: 'Playback Speed', input: 'radio', inputValue: video.playbackRate,
-          inputOptions: { '0.5': '0.5×', '0.75': '0.75×', '1': 'Normal (1×)', '1.25': '1.25×', '1.5': '1.5×', '2': '2×' },
-          showCancelButton: true, confirmButtonText: 'Set Speed', customClass: { popup: 'swal-custom-light-theme' }
-      }).then(res => {
-          if(res.isConfirmed && res.value) { video.playbackRate = parseFloat(res.value); }
-      });
-    }
-    function showQualityPopup() {
-        Swal.fire({
-            title: 'Video Quality', input: 'radio',
-            inputOptions: { index_1: '240p', index_2: '360p', index_3: '480p', index_4: '720p' },
-            inputValue: currentVideoUrl.match(/index_\d+/)?.[0] || 'index_3',
-            showCancelButton: true, confirmButtonText: 'Change Quality', customClass: { popup: 'swal-custom-light-theme' }
-        }).then(res => {
-            if (res.isConfirmed && res.value) {
-                const timeNow = video.currentTime || 0;
-                const urlObj = new URL(currentVideoUrl);
-                const base = urlObj.origin + urlObj.pathname;
-                const params = urlObj.search || "";
-                const newBase = base.replace(/index_\d+\.m3u8$/, `${res.value}.m3u8`);
-                const newUrl = newBase + params;
-                currentVideoUrl = newUrl;
-                localStorage.setItem("lastQuality_" + baseUrl, res.value);
-                attachHls(currentVideoUrl, timeNow);
+    playPauseBtn.addEventListener('click', togglePlay);
+    
+    // --- NEW DOUBLE-TAP LOGIC ---
+    let lastTap = 0;
+    seekOverlay.addEventListener('click', (e) => {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTap;
+        if (tapLength < 300 && tapLength > 0) { // Double tap
+            const rect = seekOverlay.getBoundingClientRect();
+            const position = (e.clientX - rect.left) / rect.width;
+            if (position < 0.5) {
+                video.currentTime = Math.max(0, video.currentTime - 10);
+                animateSeekIndicator('seek-backward-indicator');
+            } else {
+                video.currentTime = Math.min(video.duration, video.currentTime + 10);
+                animateSeekIndicator('seek-forward-indicator');
             }
-        });
+        }
+        lastTap = currentTime;
+    });
+
+    function animateSeekIndicator(id) {
+        const indicator = document.getElementById(id);
+        indicator.classList.add('active');
+        setTimeout(() => indicator.classList.remove('active'), 400);
     }
-    settingsBtn.addEventListener('click', () => {
-      Swal.fire({
-          title: 'Settings',
-          html: `<div id="swal-menu-quality" class="swal-menu-button"><i data-feather="hd"></i><span class="swal-menu-button-text">Change Quality</span></div><div id="swal-menu-speed" class="swal-menu-button"><i data-feather="wind"></i><span class="swal-menu-button-text">Change Speed</span></div>`,
-          showConfirmButton: false, showCancelButton: true, cancelButtonText: 'Close',
-          customClass: { popup: 'swal-custom-light-theme' },
-          didOpen: () => {
-              feather.replace();
-              document.getElementById('swal-menu-quality').addEventListener('click', () => { Swal.close(); showQualityPopup(); });
-              document.getElementById('swal-menu-speed').addEventListener('click', () => { Swal.close(); showSpeedPopup(); });
-          }
-      });
-    });
+    
+    video.addEventListener('timeupdate',()=>{const percent=(video.currentTime/video.duration)*100;progressBar.value=percent;progressBar.style.setProperty('--progress-percent',`${percent}%`);topProgressBar.style.width=`${Math.min(100,percent)}%`;let newColor='var(--danger-color)';if(percent>=70)newColor='var(--success-color)';else if(percent>=30)newColor='var(--warning-color)';topProgressBar.style.background=newColor;topProgressBar.style.boxShadow=`0 0 10px ${newColor}`;timeDisplay.textContent=`${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;});
+    video.addEventListener('loadedmetadata',()=>{timeDisplay.textContent=`00:00 / ${formatTime(video.duration)}`;});
+    progressBar.addEventListener('input',()=>{const time=(progressBar.value/100)*video.duration;video.currentTime=time;});
+    volumeSlider.addEventListener('input',()=>{video.volume=volumeSlider.value;video.muted=volumeSlider.value===0;volumeSlider.style.setProperty('--volume-percent',`${video.volume*100}%`);});
+    video.addEventListener('volumechange',()=>{volumeSlider.value=video.volume;if(video.muted||video.volume===0){volumeBtn.innerHTML=`<i data-feather="volume-x"></i>`;}else if(video.volume<0.5){volumeBtn.innerHTML=`<i data-feather="volume-1"></i>`;}else{volumeBtn.innerHTML=`<i data-feather="volume-2"></i>`;}volumeSlider.style.setProperty('--volume-percent',`${video.volume*100}%`);feather.replace();});
+    volumeBtn.addEventListener('click',()=>{video.muted=!video.muted;});
+    fullscreenBtn.addEventListener('click',()=>{if(!document.fullscreenElement){playerWrapper.requestFullscreen();}else{document.exitFullscreen();}});
+    document.addEventListener('fullscreenchange',()=>{playerWrapper.classList.toggle('fullscreen',!!document.fullscreenElement);if(document.fullscreenElement){fullscreenBtn.innerHTML=`<i data-feather="minimize"></i>`;}else{fullscreenBtn.innerHTML=`<i data-feather="maximize"></i>`;}feather.replace();});
+    
+    let controlsTimeout; function hideControls(){videoControls.classList.add('hide-controls');}
+    playerWrapper.addEventListener('mousemove',()=>{videoControls.classList.remove('hide-controls');clearTimeout(controlsTimeout);controlsTimeout=setTimeout(hideControls,3000);});
+    playerWrapper.addEventListener('mouseleave',hideControls);
 
-    // --------------------
-    // NOTES SYSTEM LOGIC (Unchanged)
-    // --------------------
-    function openNotes(){ noteDrawer.classList.add('open'); loadNotes(); }
-    function closeNotesDrawer(){ noteDrawer.classList.remove('open'); }
-    noteBtn.addEventListener('click', openNotes);
-    closeNotesBtn.addEventListener('click', closeNotesDrawer);
-    function escapeHtml(s){ return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-    function loadNotes(){
-      const notes = JSON.parse(localStorage.getItem(notesKey) || '[]');
-      noteList.innerHTML = '';
-      if (notes.length === 0) {
-        noteList.innerHTML = '<div style="opacity:.7;text-align:center;padding:20px;">No notes yet.</div>'; return;
-      }
-      notes.sort((a,b) => a.time - b.time).forEach(n => {
-          const el = document.createElement('div');
-          el.className = 'note-card';
-          el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div><div style='font-weight:700; color: var(--primary-accent);'>@ ${n.timestamp}</div><div style='opacity:.9;margin-top:6px;white-space:pre-wrap;'>${escapeHtml(n.text)}</div></div><div style='display:flex;gap:6px;'><button class='control-btn' data-action='jump' data-time='${n.time}' title="Jump">⏱️</button><button class='control-btn' data-action='edit' data-id='${n.id}' title="Edit">✏️</button><button class='control-btn' data-action="delete" data-id='${n.id}' title="Delete">🗑️</button></div></div>`;
-          noteList.appendChild(el);
-      });
-    }
-    noteList.addEventListener('click', (e) => {
-      const btn = e.target.closest('button[data-action]'); if (!btn) return;
-      const action = btn.dataset.action;
-      let notes = JSON.parse(localStorage.getItem(notesKey) || '[]');
-      if (action === 'jump') { video.currentTime = parseFloat(btn.dataset.time || '0'); closeNotesDrawer(); }
-      else if (action === 'delete') {
-        notes = notes.filter(x => x.id !== parseInt(btn.dataset.id));
-        localStorage.setItem(notesKey, JSON.stringify(notes)); loadNotes();
-      } else if (action === 'edit') {
-        const note = notes.find(x => x.id === parseInt(btn.dataset.id)); if (!note) return;
-        Swal.fire({title:'Edit Note',input:'textarea',inputValue:note.text,showCancelButton:true, confirmButtonText: 'Save Changes'}).then(res => {
-          if (res.isConfirmed && res.value) {
-            note.text = res.value.trim();
-            localStorage.setItem(notesKey, JSON.stringify(notes)); loadNotes();
-          }
-        });
-      }
-    });
-    saveNoteBtn.addEventListener('click', () => {
-      const txt = (noteInput.value || '').trim();
-      if (!txt) return Swal.fire('Empty Note', 'Please write something.', 'warning');
-      const notes = JSON.parse(localStorage.getItem(notesKey) || '[]');
-      const now = Math.floor(video.currentTime || 0);
-      notes.push({ id: Date.now(), time: now, timestamp: formatTime(now), text: txt });
-      localStorage.setItem(notesKey, JSON.stringify(notes));
-      noteInput.value = '';
-      loadNotes();
-      Swal.fire({toast:true,icon:'success',title:'Note Saved!',position:'top-end',showConfirmButton:false,timer:1500});
-    });
+    function showSpeedPopup(){Swal.fire({title:'Playback Speed',input:'radio',inputValue:video.playbackRate,inputOptions:{'0.5':'0.5×','0.75':'0.75×','1':'Normal (1×)','1.25':'1.25×','1.5':'1.5×','2':'2×'},showCancelButton:true,confirmButtonText:'Set Speed',customClass:{popup:'swal-custom-light-theme'}}).then(res=>{if(res.isConfirmed&&res.value){video.playbackRate=parseFloat(res.value);}});}
+    function showQualityPopup(){Swal.fire({title:'Video Quality',input:'radio',inputOptions:{index_1:'240p',index_2:'360p',index_3:'480p',index_4:'720p'},inputValue:currentVideoUrl.match(/index_\d+/)?.[0]||'index_3',showCancelButton:true,confirmButtonText:'Change Quality',customClass:{popup:'swal-custom-light-theme'}}).then(res=>{if(res.isConfirmed&&res.value){const timeNow=video.currentTime||0;const urlObj=new URL(currentVideoUrl);const base=urlObj.origin+urlObj.pathname;const params=urlObj.search||"";const newBase=base.replace(/index_\d+\.m3u8$/,`${res.value}.m3u8`);const newUrl=newBase+params;currentVideoUrl=newUrl;localStorage.setItem("lastQuality_"+baseUrl,res.value);attachHls(currentVideoUrl,timeNow);}});}
+    settingsBtn.addEventListener('click',()=>{Swal.fire({title:'Settings',html:`<div id="swal-menu-quality" class="swal-menu-button"><i data-feather="hd"></i><span class="swal-menu-button-text">Change Quality</span></div><div id="swal-menu-speed" class="swal-menu-button"><i data-feather="wind"></i><span class="swal-menu-button-text">Change Speed</span></div>`,showConfirmButton:false,showCancelButton:true,cancelButtonText:'Close',customClass:{popup:'swal-custom-light-theme'},didOpen:()=>{feather.replace();document.getElementById('swal-menu-quality').addEventListener('click',()=>{Swal.close();showQualityPopup();});document.getElementById('swal-menu-speed').addEventListener('click',()=>{Swal.close();showSpeedPopup();});}});});
 
-    // --------------------
-    // Other Controls (Screenshot, PiP) - (Unchanged)
-    // --------------------
-    screenshotBtn.addEventListener('click', () => {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(blob => {
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(blob);
-          a.download = `StudySmarter-Screenshot-${Date.now()}.jpg`;
-          a.click();
-          URL.revokeObjectURL(a.href);
-        }, 'image/jpeg');
-      } catch (e) {
-        Swal.fire('Screenshot Failed', 'Could not capture frame. This may be due to browser security restrictions.', 'error');
-      }
-    });
+    function openNotes(){noteDrawer.classList.add('open');loadNotes();}
+    function closeNotesDrawer(){noteDrawer.classList.remove('open');}
+    noteBtn.addEventListener('click',openNotes);closeNotesBtn.addEventListener('click',closeNotesDrawer);function escapeHtml(s){return(s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+    function loadNotes(){const notes=JSON.parse(localStorage.getItem(notesKey)||'[]');noteList.innerHTML='';if(notes.length===0){noteList.innerHTML='<div style="opacity:.7;text-align:center;padding:20px;">No notes yet.</div>';return;}notes.sort((a,b)=>a.time-b.time).forEach(n=>{const el=document.createElement('div');el.className='note-card';el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div><div style='font-weight:700; color: var(--primary-accent);'>@ ${n.timestamp}</div><div style='opacity:.9;margin-top:6px;white-space:pre-wrap;'>${escapeHtml(n.text)}</div></div><div style='display:flex;gap:6px;'><button class='control-btn' data-action='jump' data-time='${n.time}' title="Jump">⏱️</button><button class='control-btn' data-action='edit' data-id='${n.id}' title="Edit">✏️</button><button class='control-btn' data-action="delete" data-id='${n.id}' title="Delete">🗑️</button></div></div>`;noteList.appendChild(el);});}
+    noteList.addEventListener('click',(e)=>{const btn=e.target.closest('button[data-action]');if(!btn)return;const action=btn.dataset.action;let notes=JSON.parse(localStorage.getItem(notesKey)||'[]');if(action==='jump'){video.currentTime=parseFloat(btn.dataset.time||'0');closeNotesDrawer();}else if(action==='delete'){notes=notes.filter(x=>x.id!==parseInt(btn.dataset.id));localStorage.setItem(notesKey,JSON.stringify(notes));loadNotes();}else if(action==='edit'){const note=notes.find(x=>x.id===parseInt(btn.dataset.id));if(!note)return;Swal.fire({title:'Edit Note',input:'textarea',inputValue:note.text,showCancelButton:true,confirmButtonText:'Save Changes'}).then(res=>{if(res.isConfirmed&&res.value){note.text=res.value.trim();localStorage.setItem(notesKey,JSON.stringify(notes));loadNotes();}});}});
+    saveNoteBtn.addEventListener('click',()=>{const txt=(noteInput.value||'').trim();if(!txt)return Swal.fire('Empty Note','Please write something.','warning');const notes=JSON.parse(localStorage.getItem(notesKey)||'[]');const now=Math.floor(video.currentTime||0);notes.push({id:Date.now(),time:now,timestamp:formatTime(now),text:txt});localStorage.setItem(notesKey,JSON.stringify(notes));noteInput.value='';loadNotes();Swal.fire({toast:true,icon:'success',title:'Note Saved!',position:'top-end',showConfirmButton:false,timer:1500});});
 
-    if (!document.pictureInPictureEnabled) { pipBtn.style.display = 'none'; }
-    else { pipBtn.addEventListener('click', () => document.pictureInPictureElement ? document.exitPictureInPicture() : video.requestPictureInPicture()); }
-
-    // --------------------
-    // PAGE LOAD ANIMATION & FINAL SETUP
-    // --------------------
+    screenshotBtn.addEventListener('click',()=>{try{const canvas=document.createElement('canvas');canvas.width=video.videoWidth;canvas.height=video.videoHeight;canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);canvas.toBlob(blob=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`StudySmarter-Screenshot-${Date.now()}.jpg`;a.click();URL.revokeObjectURL(a.href);},'image/jpeg');}catch(e){Swal.fire('Screenshot Failed','Could not capture frame. This may be due to browser security restrictions.','error');}});
+    if(!document.pictureInPictureEnabled){pipBtn.style.display='none';}else{pipBtn.addEventListener('click',()=>document.pictureInPictureElement?document.exitPictureInPicture():video.requestPictureInPicture());}
+    
     feather.replace();
-    setTimeout(() => document.body.classList.add('loaded'), 100);
+    setTimeout(()=>document.body.classList.add('loaded'),100);
   });
   </script>
 </body>
